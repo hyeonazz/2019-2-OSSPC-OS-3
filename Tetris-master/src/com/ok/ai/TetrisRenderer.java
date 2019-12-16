@@ -22,43 +22,23 @@ import javax.imageio.*;
 @SuppressWarnings("serial")
 public class TetrisRenderer extends Component implements KeyListener, ActionListener
 {
+	public static Main m = new Main();
 	public static final String VERSION = "1.1";
 	public static int num=0;
 	public static JFrame frame = new JFrame("Tetris");
 
 	public static JButton keyButton;
 	public static JButton newButton;
-
-	public static JRadioButton offButton;
-	public static JRadioButton slowButton;
-	public static JRadioButton medButton;
-	public static JRadioButton quickButton;
-	public static JRadioButton insaneButton;
-	public static ButtonGroup group;
-	
-	public static JButton restartButton;
-	public static JButton aiRestartButton;
-	//public static JButton swapButton;
-	private static final int OFF_SPEED = 50;
-	private static final int SLOW_SPEED = 400;
-	private static final int MED_SPEED = 125;
-	private static final int QUICK_SPEED = 65;
-	private static final int INSANE_SPEED = 10;
-	
-	//private static final int W = Tetris.PIXEL_W * 2 + 150;
-	//private static final int H = Tetris.PIXEL_H + 100;
+	public static JButton homeButton;
 	
 	private static final int W = -180;
 	private static final int H = Tetris.PIXEL_H + 100;
 	
-	private static final int AI_SPEED_X = W / 2 + 130;
-	private static final int AI_SPEED_Y = 260;
-	
+
 	private static int[] keyPresses = new int[1000];
 	private static int keyPos = 0;
 	
 	public Tetris game;
-	public Tetris aiGame;
 	private Timer timer;
 	private Timer painter;
 	public TMain main;
@@ -70,25 +50,15 @@ public class TetrisRenderer extends Component implements KeyListener, ActionList
 	private boolean right;
 	private long moveTime;
 	private boolean onDas;
-	private int[] settings;
-	private volatile int sleepTime;
-	private volatile boolean swapped;
-	
+	private int[] settings;	
 	public static final int MARATHON = 1;
-	public static final int SPRINT = 2;
-	public static final int BATTLE = 3;
-	public static final int BATTLE_GARBAGE = 4;
 	
 	private static final String GAME_TYPE_SETTING = "game_type";
 	
-	
-	private JLabel menuBar = new JLabel(new ImageIcon(Main.class.getResource("../images/menuBar.png")));
-	
-	private ImageIcon exitButtonBasicImage = new ImageIcon(Main.class.getResource("../images/exitButtonBasic.png"));
-	private ImageIcon exitButtonEnteredImage = new ImageIcon(Main.class.getResource("../images/exitButtonEntered.png"));
-	private JButton exitButton = new JButton(exitButtonBasicImage);
+	private ImageIcon backgroundImage = new ImageIcon(Main.class.getResource("../images/test0101.png")); //background image
+	public JButton background = new JButton(backgroundImage);
 	public int gameType;
-	private int mouseX, mouseY;
+
 	Thread thread;
 	
 	public Dimension getMinimunSize(){
@@ -96,557 +66,226 @@ public class TetrisRenderer extends Component implements KeyListener, ActionList
 	}
 	public TetrisRenderer()
 	{
-		//frame.setUndecorated(true);
+		
 		frame.setLocationRelativeTo(null);
 		frame.setResizable(true);
 		frame.setResizable(true); //Resize the Game screen using the mouse
 
-		//exitButton.setBounds(1245, 0, 30, 30);
+	
+		newButton =new JButton (new ImageIcon(Main.class.getResource("../images/button-newgame.png")));
+		newButton.setBorderPainted(false);
+		newButton.setContentAreaFilled(false);
+		newButton.setFocusPainted(false);
+		newButton.setSize(newButton.getPreferredSize());
+		newButton.setLocation(W / 2 - newButton.getWidth() / 2 + 250 , 600);
+		newButton.setFocusable(false);
+		frame.getContentPane().add(newButton);
+		newButton.setBackground(Color.WHITE);
+				
+				
+		keyButton =new JButton (new ImageIcon(Main.class.getResource("../images/button-help.png")));
+		keyButton.setBorderPainted(false);
+		keyButton.setContentAreaFilled(false);
+		keyButton.setFocusPainted(false);
+		keyButton.setSize(keyButton.getPreferredSize());
+		keyButton.setLocation(W / 2 - keyButton.getWidth() / 2 + 400, 600);
+		keyButton.setFocusable(false);
+		frame.getContentPane().add(keyButton);
+		keyButton.setBackground(Color.WHITE);
+			   
+		homeButton =new JButton (new ImageIcon(Main.class.getResource("../images/home-exit.png")));
+		homeButton.setBorderPainted(false);
+		homeButton.setContentAreaFilled(false);
+		homeButton.setFocusPainted(false);
+		homeButton.setSize(homeButton.getPreferredSize());
+		homeButton.setLocation(W / 2 - homeButton.getWidth() / 2 + 1020, 50);
+		homeButton.setFocusable(false);
+		frame.getContentPane().add(homeButton);
+		homeButton.setBackground(Color.WHITE);
+				
+
+		frame.addKeyListener(this);
+		frame.setFocusable(true);
+				
+		frame.getContentPane().add(this);
+					
+		keyButton.addActionListener(this);
+		newButton.addActionListener(this);
+		homeButton.addActionListener(this);
 		
-		/*
-		exitButton.setBounds(490, 0, 30, 30);
-		exitButton.setBorderPainted(false);
-		exitButton.setContentAreaFilled(false);
-		exitButton.setFocusPainted(false);
-		// exit Button 챙혶쨈챘짼짚챠힋쨍 챙짼�쑦ヂ┑�
-		exitButton.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseEntered(MouseEvent e) {
-				exitButton.setIcon(exitButtonEnteredImage); // 챘짠�녍�큄째챙힋짚챗째�궗 exit 챘짼�왗�힋쩌챙�붋� 챙�쑣�챘혶쩌챗째�궗챘짤쨈 챙혶쨈챘짱쨍챙짠�궗챘짜쩌 챘째�씳ぢ욋�씳�짚흸.
-				exitButton.setCursor(new Cursor(Cursor.HAND_CURSOR)); // 챘짠�녍�큄째챙힋짚챗째�궗 챙�쑣�챘혶쩌챗째�궗챘짤쨈 챙�졖먄ぢ겸궗챘혶쩍 챘짧짢챙�볛�샖�흹쩌챘징흹챘째�씳ぢ옹�
-			}
+		try {
+				ClassLoader loader = Thread.currentThread().getContextClassLoader();
+				ArrayList<Image> icons = new ArrayList<Image>();
+					
+				icons.add(ImageIO.read(loader.getResourceAsStream("Icon.png")));
+				icons.add(ImageIO.read(loader.getResourceAsStream("icon32x32.png")));
+				icons.add(ImageIO.read(loader.getResourceAsStream("icon16x16.png")));
 
-			@Override
-			public void mouseExited(MouseEvent e) {
-				exitButton.setIcon(exitButtonBasicImage);
-				exitButton.setCursor(new Cursor(Cursor.DEFAULT_CURSOR)); // 챘짠�녍�큄째챙힋짚챘짜쩌 챘�벬셌ヂ㈑� 챘�뮤ㅓр�뮴� 챘�앪�씳�혧쨈챠힋쨍 챘짧짢챙�볛�샖�흹쩌챘징흹 챘째�씳ぢ옹�
+				frame.setIconImages(icons);
 			}
+			catch (Exception ex) {}
 
-			@Override
-			public void mousePressed(MouseEvent e) {
-				game.die();
-				aiGame.die();
-				frame.dispose();
-				main = new TMain();
-			}
+		frame.pack();
+				
+		frame.setSize(1000,720); //게임 사이즈 조절
+		frame.setMinimumSize(getMinimunSize());
+		frame.setVisible(true);
+				
+		System.setProperty("awt.useSystemAAFontSettings","on");
+		System.setProperty("swing.aatext", "true");
+				
+		Preferences prefs = Preferences.userNodeForPackage(TetrisRenderer.class);
+		gameType = prefs.getInt(GAME_TYPE_SETTING, MARATHON);
+		
+		switch (gameType)
+		{
+			case MARATHON:
+				game = new TetrisMarathon(new BagGen());
+				break;
+				
+			default:
+				game = new TetrisMarathon(new BagGen());
+				gameType = MARATHON;
+		}
+				
+		timer = new Timer(50, this);
+		timer.start();
+		painter = new Timer(1000 / 30, this);
+		painter.start();
+				
+		settings = new int[SettingsDialog.LEN];
+		for (int i = 0; i < settings.length; i++)
+			settings[i] = SettingsDialog.LOADED[i];
+
+		down = false;
+		left = false;
+		right = false;
+
+		thread = new Thread(new Runnable() {
+			public void run() { }
 		});
-		frame.add(exitButton);
-		*/
-		
-		//menuBar.setBounds(0, 0, 1280, 30);
-		
-		/*
-		menuBar.setBounds(0, 0, 520, 30);
-				menuBar.addMouseListener(new MouseAdapter() {
-					public void mousePressed(MouseEvent e) { // 챘짠�녍�큄째챙힋짚 챠혖쨈챘짝짯 챙�뮴� x,y 챙짖흸챠�샚벭ヂΒ� 챙�벬뼙р�벬늘��쑣�.
-						mouseX = e.getX();
-						mouseY = e.getY();
-					}
-				});
-				menuBar.addMouseMotionListener(new MouseMotionAdapter() { // 챘짤�씳モ�걔늘ヂ겸�씳ヂΒ� 챘�쑩벭ヅ알쑦ぢ력� 챠�◈졗モ�◑� 챠�꽓�씳ヂ㈑늘�혶쨈 챘�씲걘ヂ씲셌��쑣ㅓぢ꼽� 챠�▦쑦ヅ졻�� 챙혶쨈챘짼짚챠힋쨍
-					public void mouseDragged(MouseEvent e) {
-						int x = e.getXOnScreen();
-						int y = e.getYOnScreen();
-						frame.setLocation(x - mouseX, y - mouseY); // JFrame챙혶�� 챙흹�왗�쨔�쑦ヂΒ� 챘째�씳ぢ욋�씳�짚흸
-					}
-				});
-				frame.add(menuBar);
-			*/	
-			newButton =new JButton (new ImageIcon(Main.class.getResource("../images/button-play.png")));
-		    newButton.setBorderPainted(false);
-		    newButton.setContentAreaFilled(false);
-		    newButton.setFocusPainted(false);
-	
-				newButton.setSize(newButton.getPreferredSize());
-				newButton.setLocation(W / 2 - newButton.getWidth() / 2 + 250 , 600);
-				newButton.setFocusable(false);
-				frame.getContentPane().add(newButton);
-			    newButton.setBackground(Color.WHITE);
-				
-				
-			    keyButton =new JButton (new ImageIcon(Main.class.getResource("../images/button-help.png")));
-			    keyButton.setBorderPainted(false);
-			    keyButton.setContentAreaFilled(false);
-			    keyButton.setFocusPainted(false);
-				keyButton.setSize(newButton.getWidth(), keyButton.getPreferredSize().height);
-				keyButton.setLocation(W / 2 - keyButton.getWidth() / 2 + 320, 600);
-				keyButton.setFocusable(false);
-				frame.getContentPane().add(keyButton);
-			    keyButton.setBackground(Color.WHITE);
-				
-				restartButton = new JButton("Restart");
-				restartButton.setSize(restartButton.getPreferredSize());
-				
-				restartButton.setFocusable(false);
-				restartButton.setVisible(false);
-				frame.getContentPane().add(restartButton);
-				restartButton.setFont(new Font("digital-7", Font.BOLD, 13));
-			    restartButton.setBackground(Color.WHITE);
-				/*
-				aiRestartButton = new JButton("Restart");
-				aiRestartButton.setSize(aiRestartButton.getPreferredSize());
-				//aiRestartButton.setLocation(125 + Tetris.PIXEL_W + Tetris.FIELD_W / 2 + Tetris.DSP_W - aiRestartButton.getWidth() / 2 + 160, 375);
-				aiRestartButton.setFocusable(false);
-				aiRestartButton.setVisible(false);
-				frame.getContentPane().add(aiRestartButton);
-				aiRestartButton.setFont(new Font("digital-7", Font.BOLD, 13));
-				aiRestartButton.setBackground(Color.WHITE);
-				*/
-				/*
-				swapButton = new JButton("\u2194");
-				swapButton.setFont(new Font(Font.DIALOG, Font.BOLD, 24));
-				swapButton.setSize(70, 30);
-				//swapButton.setLocation(W / 2 - swapButton.getWidth() / 2 + 160, 410);
-				swapButton.setFocusable(false);
-				frame.getContentPane().add(swapButton);
-				swapButton.setBackground(Color.WHITE);
-				 */
-			    /*
-				group = new ButtonGroup();
-				
-				offButton = new JRadioButton("Off");
-				offButton.setSize(offButton.getPreferredSize());
-				//offButton.setLocation(AI_SPEED_X, AI_SPEED_Y+10);
-				offButton.setFocusable(false);
-				group.add(offButton);
-				frame.getContentPane().add(offButton);
-				offButton.setBackground(Color.BLACK);
-				offButton.setForeground(Color.WHITE);
-				
-				slowButton = new JRadioButton("Slow");
-				slowButton.setSize(slowButton.getPreferredSize());
-				//slowButton.setLocation(AI_SPEED_X, AI_SPEED_Y + 30);
-				slowButton.setFocusable(false);
-				group.add(slowButton);
-				frame.getContentPane().add(slowButton);
-				slowButton.setBackground(Color.BLACK);
-				slowButton.setForeground(Color.WHITE);
-				
-				medButton = new JRadioButton("Medium");
-				medButton.setSize(medButton.getPreferredSize());
-				//medButton.setLocation(AI_SPEED_X, AI_SPEED_Y + 50);
-				medButton.setFocusable(false);
-				group.add(medButton);
-				frame.getContentPane().add(medButton);
-				medButton.setBackground(Color.BLACK);
-				medButton.setForeground(Color.WHITE);
-				
-				quickButton = new JRadioButton("Fast");
-				quickButton.setSize(quickButton.getPreferredSize());
-				//quickButton.setLocation(AI_SPEED_X, AI_SPEED_Y + 70);
-				quickButton.setFocusable(false);
-				group.add(quickButton);
-				frame.getContentPane().add(quickButton);
-				quickButton.setBackground(Color.BLACK);
-				quickButton.setForeground(Color.WHITE);
-				
-				insaneButton = new JRadioButton("Insane");
-				insaneButton.setSize(insaneButton.getPreferredSize());
-				//insaneButton.setLocation(AI_SPEED_X, AI_SPEED_Y + 90);
-				insaneButton.setFocusable(false);
-				group.add(insaneButton);
-				frame.getContentPane().add(insaneButton);
-				
-				insaneButton.setBackground(Color.BLACK);
-				insaneButton.setForeground(Color.WHITE);
-				*/
-				frame.addKeyListener(this);
-				frame.setFocusable(true);
-				
-				frame.getContentPane().add(this);
-					
-				
-				//medButton.setSelected(true);
-				keyButton.addActionListener(this);
-				newButton.addActionListener(this);
-				/*
-				offButton.addActionListener(this);
-				slowButton.addActionListener(this);
-				medButton.addActionListener(this);
-				quickButton.addActionListener(this);
-				insaneButton.addActionListener(this);
-				restartButton.addActionListener(this);
-				//aiRestartButton.addActionListener(this);
-				//swapButton.addActionListener(this);
-				*/
-				try {
-					ClassLoader loader = Thread.currentThread().getContextClassLoader();
-					ArrayList<Image> icons = new ArrayList<Image>();
-					
-					icons.add(ImageIO.read(loader.getResourceAsStream("Icon.png")));
-					icons.add(ImageIO.read(loader.getResourceAsStream("icon32x32.png")));
-					icons.add(ImageIO.read(loader.getResourceAsStream("icon16x16.png")));
-
-					frame.setIconImages(icons);
-				}
-				catch (Exception ex) {}
-
-
-				//frame.setResizable(false);			
-				frame.pack();
-				//frame.setSize(1280,720);
-				
-				
-				frame.setSize(1000,720); //게임 사이즈 조절
-				frame.setMinimumSize(getMinimunSize());
-					frame.setVisible(true);
-				
+		thread.setDaemon(true);
+		thread.start();
+		background.setBounds(0, 0, 1000, 720);
+		background.setBorderPainted(false);
+		background.setContentAreaFilled(false);
+		background.setFocusPainted(false);
+		background.setVisible(true);
+		frame.add(background); //add game play screen background image
+		frame.setLocationRelativeTo(null);
+		}
 			
-				System.setProperty("awt.useSystemAAFontSettings","on");
-				System.setProperty("swing.aatext", "true");
-				
-				Preferences prefs = Preferences.userNodeForPackage(TetrisRenderer.class);
-				gameType = prefs.getInt(GAME_TYPE_SETTING, MARATHON);
+		public Dimension getPreferredSize()
+		{
+			return new Dimension(W, H);
+		}
+
+		public void paint(Graphics g)
+		{
+			super.paint(g);
+			game.setSQR_W(frame.getSize().width/50);
+			game.setDSP_W(frame.getSize().width/15);
+			game.drawTo((Graphics2D)(g), (int)(frame.getSize().width/3), (int)(frame.getSize().height/5)); //The play Screen can move according to the size of the frame
+			newButton.setSize(frame.getSize().width/8,frame.getSize().width/16);
+			keyButton.setSize(frame.getSize().width/18,frame.getSize().width/19);
+			homeButton.setSize(frame.getSize().width/8,frame.getSize().width/19);
+			newButton.setLocation(W/2-newButton.getWidth()/2+Tetris.SQR_W*14,Tetris.SQR_W*30);
+			keyButton.setLocation(W/2-keyButton.getWidth()/2+Tetris.SQR_W*19,Tetris.SQR_W*30);
+			homeButton.setLocation(W/2-homeButton.getWidth()/2+Tetris.SQR_W*51,(int)(Tetris.SQR_W*2.5));
 		
-				switch (gameType)
-				{
-				case MARATHON:
-					game = new TetrisMarathon(new BagGen());
-					aiGame = new TetrisMarathon(new BagGen()); //이걸 지우면 x를 눌러도 나가지지 않음.
-					break;
-				
-				default:
-					game = new TetrisMarathon(new BagGen());
-				//	aiGame = new TetrisMarathon(new BagGen());
-					gameType = MARATHON;
-				}
-				
-				timer = new Timer(50, this);
-				timer.start();
-				painter = new Timer(1000 / 30, this);
-				painter.start();
-				
-				settings = new int[SettingsDialog.LEN];
-				for (int i = 0; i < settings.length; i++)
-					settings[i] = SettingsDialog.LOADED[i];
 
-				sleepTime = MED_SPEED;
-				down = false;
-				left = false;
-				right = false;
-
-				thread = new Thread(new Runnable() {
-					public void run()
-					{
-						runAI();
-					}
-				});
-				thread.setDaemon(true);
-				thread.start();
-			}
-			
-			public Dimension getPreferredSize()
-			{
-				return new Dimension(W, H);
-			}
-
-			public void paint(Graphics g)
-			{
-				super.paint(g);
-			    Image backImage = Toolkit.getDefaultToolkit().getImage("framge.img");
-			    g.drawImage(backImage,0,0,getWidth(),getHeight(),this);
-				//매인 프레임 설정
-			      g.setColor(Color.black); //배경색 변경
-			      
-			      g.fillRect(0, 0, frame.getSize().width, frame.getSize().height); //Resize background to match frame size    
-			      //aiGame.drawTo((Graphics2D)(g), Tetris.PIXEL_W + 400, 100); //ai게임창 지워짐.
-			      //aiRestartButton.setVisible(aiGame.isOver());
-			      
-			      //game.drawTo((Graphics2D)(g), 100, 100);
-			     //restartButton.setVisible(game.isOver());
-			      
-			      
-			      
-			      g.setColor(Color.WHITE);
-			      //g.drawRect(AI_SPEED_X - 9, AI_SPEED_Y+1, 82, 120); 
-			      
-			     // aiGame.drawTo((Graphics2D)(g), Tetris.PIXEL_W + 400, 100);
-			      //aiRestartButton.setVisible(aiGame.isOver());
-			      
-			      game.drawTo((Graphics2D)(g), (int)(frame.getSize().width/3), (int)(frame.getSize().height/5)); //The play Screen can move according to the size of the frame
-				  //restartButton.setVisible(game.isOver());
-
-			      
-			      g.setColor(Color.WHITE);
-			     // g.drawRoundRect(AI_SPEED_X - 9, AI_SPEED_Y+1, 82, 120, 20, 20);
 			}
 
 
-			public void actionPerformed(ActionEvent e)
-			{
-				Object source = e.getSource();
+		public void actionPerformed(ActionEvent e)
+		{
+			Object source = e.getSource();
 				
-				if (source == timer)
-				{
-					if (down && game.canMove(0, 1))
-						game.forceTick();
-					else
-						game.tick();
-				//	aiGame.tick(); //블럭이 떨어지지 않음.
-					
-				//	if (game.isOver())
-				//		aiGame.die(); //내가 죽어도 ai는 죽지 않음.
-				}
-				else if (source == painter)
-					repaint();
-				else if (source == newButton)
-					launchNewGameDialog();
-				else if (source == keyButton)
-					launchKeyDialog();
-//				else if (source == offButton)
-//				{
-//					sleepTime = OFF_SPEED;
-//					if (aiGame instanceof TetrisBattle)
-//						((TetrisBattle) aiGame).setPausedIndependent(true);
-//					else
-//						aiGame.setPaused(true);
-//					swapButton.setEnabled(false);
-//				}
-//				else if (source == slowButton)
-//				{
-//					if (sleepTime == OFF_SPEED)
-//						aiGame.setPaused(false);
-//					sleepTime = SLOW_SPEED;
-//					swapButton.setEnabled(true);
-//				}
-//				else if (source == medButton)
-//				{
-//					if (sleepTime == OFF_SPEED)
-//						aiGame.setPaused(false);
-//					sleepTime = MED_SPEED;
-//					swapButton.setEnabled(true);
-//				}
-//				else if (source == quickButton)
-//				{
-//					if (sleepTime == OFF_SPEED)
-//						aiGame.setPaused(false);
-//					sleepTime = QUICK_SPEED;
-//					swapButton.setEnabled(true);
-//				}
-//				else if (source == insaneButton)
-//				{
-//					if (sleepTime == OFF_SPEED)
-//						aiGame.setPaused(false);
-//					sleepTime = INSANE_SPEED;
-//					swapButton.setEnabled(true);
-//				}
-//				else if (source == restartButton)
-//				{
-//					game = game.newGame();
-//					if (game instanceof TetrisBattle)
-//						aiGame = ((TetrisBattle) game).getPaired();
-//				}
-//				else if (source == aiRestartButton)
-//				{
-//					aiGame = aiGame.newGame();
-//					if (game instanceof TetrisBattle)
-//						game = ((TetrisBattle) aiGame).getPaired();
-//				}
-//				else if (source == swapButton)
-//				{
-//					synchronized (aiLock)
-//					{
-//						Tetris swap = game;
-//						game = aiGame;
-//						aiGame = swap;
-//						swapped = true;
-//					}
-//				}
+			if (source == timer)
+			{
+				if (down && game.canMove(0, 1))
+					game.forceTick();
 				else
-					System.out.println(source);
+					game.tick();	
+		}
+		else if (source == painter)
+			repaint();
+		else if (source == newButton)
+			launchNewGameDialog();
+		else if (source == keyButton)
+			launchKeyDialog();
+		else if (source==homeButton) {
+			game.die();
+			frame.dispose();
+			main = new TMain();
+		}
+		else
+			System.out.println(source);
 
-				if (left != right)
-				{
-					long time = System.currentTimeMillis();
-					if ((onDas && time - moveTime >= settings[SettingsDialog.DAS_I]) || (!onDas && time - moveTime >= settings[SettingsDialog.ARR_I]))
-					{
-						if (left)
-							game.moveLeft();
-						else
-							game.moveRight();
-						onDas = false;
-						moveTime = time;
-					}
+		if (left != right)
+		{
+			long time = System.currentTimeMillis();
+			if ((onDas && time - moveTime >= settings[SettingsDialog.DAS_I]) || (!onDas && time - moveTime >= settings[SettingsDialog.ARR_I]))
+			{
+				if (left)
+					game.moveLeft();
+				else
+					game.moveRight();
+					onDas = false;
+					moveTime = time;
 				}
 			}
+		}
 
-			private void easySpin()
+		private void easySpin()
+		{
+			game.resetTicks();
+		}
+
+		private void launchKeyDialog()
+		{
+			down = false;
+			synchronized (aiLock)
 			{
-				game.resetTicks();
+				boolean gameState = game.isPaused();
+				
+				game.setPaused(true);
+				
+				SettingsDialog.showDialog(TetrisRenderer.frame, settings);
+				game.setPaused(gameState);
+					
 			}
-			
-			private void runAI()
-			{
-				while (num==1)
-				{	/*
-					while (aiGame.isOver() || aiGame.isPaused())
-					{
-						try {
-							Thread.sleep(50);
-						}
-						catch (InterruptedException ex)
-						{
-							return;
-						}
-					}
-		*/
-					int[] moves;
-//					synchronized (aiLock)
-//					{
-//						if (aiGame instanceof TetrisBattle)
-//							moves = BattleAI.DEFAULT.getMove((TetrisBattle) aiGame);
-//						else
-							moves = TetrisAI.getMove(aiGame);
-//					}
+		}
+		private void launchNewGameDialog()
+		{
+			down = false;
+			synchronized (aiLock)
+			{ 
+				boolean gameState = game.isPaused();
+				
+				game.setPaused(true);
+					
+				int choice = GameTypeDialog.showDialog(TetrisRenderer.frame, gameType);
 
-					for (int i = 0; i < moves.length; i++)
+				game.setPaused(gameState);
+					
+				if (choice != 0)
+				{
+					synchronized (aiLock)
 					{
-						/*if (i == 0)
+						gameType = choice;
+						switch (choice)
 						{
-							try {
-								if (aiGame.height() >= 15)
-									Thread.sleep(Math.min(sleepTime, 40));
-								else
-									Thread.sleep(sleepTime);
-							}
-							catch (InterruptedException ex)
-							{
-								Thread.currentThread().interrupt();
-								return;
-							}
-						}*/
-						/*
-						while (aiGame.isPaused())
-						{
-							try {
-								Thread.sleep(50);
-							}
-							catch (InterruptedException ex)
-							{
-								Thread.currentThread().interrupt();
-								return;
-							}
-						}
-						*/
-						if (aiGame.isOver())
+						case MARATHON:
+							game = new TetrisMarathon(new BagGen());
 							break;
-						/*
-						synchronized (aiLock)
-						{
-							if (swapped)
-							{
-								swapped = false;
-								break;
-							}
-							switch (moves[i])
-							{
-							case TetrisAI.LEFT:
-								aiGame.moveLeft();
-								aiGame.resetTicks();
-								break;
-							case TetrisAI.RIGHT:
-								aiGame.moveRight();
-								aiGame.resetTicks();
-								break;
-							case TetrisAI.ROTATE:
-								aiGame.rotate();
-								break;
-							case TetrisAI.ROTATE_COUNTER:
-								aiGame.rotateCounter();
-								break;
-							case TetrisAI.SWAP:
-								aiGame.store();
-								break;
-							case TetrisAI.DROP:
-								aiGame.drop();
-								break;
-							}
-							
-						} */
-						
-						try {
-							Thread.sleep(sleepTime);
-						}
-						catch (InterruptedException ex)
-						{
-							Thread.currentThread().interrupt();
-							return;
 						}
 					}
+					Preferences prefs = Preferences.userNodeForPackage(TetrisRenderer.class);
+					prefs.putInt(GAME_TYPE_SETTING, choice);
 				}
 			}
-	
-			private void launchKeyDialog()
-			{
-				down = false;
-				synchronized (aiLock)
-				{
-					boolean gameState = game.isPaused();
-					//boolean aiGameState = aiGame.isPaused();
-
-					game.setPaused(true);
-					//aiGame.setPaused(true);
-					
-					SettingsDialog.showDialog(TetrisRenderer.frame, settings);
-
-					game.setPaused(gameState);
-					//aiGame.setPaused(aiGameState);
-				}
-			}
-			private void launchNewGameDialog()
-			{
-				down = false;
-				synchronized (aiLock)
-				{ 
-					boolean gameState = game.isPaused();
-					//boolean aiGameState = aiGame.isPaused();
-
-					game.setPaused(true);
-					//aiGame.setPaused(true);
-					
-					int choice = GameTypeDialog.showDialog(TetrisRenderer.frame, gameType);
-
-					game.setPaused(gameState);
-					//aiGame.setPaused(aiGameState);
-					
-					if (choice != 0)
-					{
-						synchronized (aiLock)
-						{
-							gameType = choice;
-							switch (choice)
-							{
-							case MARATHON:
-								game = new TetrisMarathon(new BagGen());
-							//	aiGame = new TetrisMarathon(new BagGen()); //새 게임을 눌러도 ai계속 진행
-								break;
-//							case SPRINT:
-//								game = new TetrisSprint(new BagGen());
-//								aiGame = new TetrisSprint(new BagGen());
-//								break;
-//							case BATTLE:
-//							{
-//								TetrisBattle t = new TetrisBattle(new BagGen(), new BagGen(), false);
-//								game = t;
-//								aiGame = t.getPaired();
-//								break;
-//							}
-//							case BATTLE_GARBAGE:
-//							{
-//								TetrisBattle t = new TetrisBattle(new BagGen(), new BagGen(), true);
-//								game = t;
-//								aiGame = t.getPaired();
-//								break;
-//							}
-							}
-						}
-						Preferences prefs = Preferences.userNodeForPackage(TetrisRenderer.class);
-						prefs.putInt(GAME_TYPE_SETTING, choice);
-					}
-					if (offButton.isSelected())
-						this.actionPerformed(new ActionEvent(offButton, ActionEvent.ACTION_PERFORMED, offButton.getActionCommand()));
-				}
-			}
+		}
 			
 	
 	private String getString()
@@ -725,12 +364,10 @@ public class TetrisRenderer extends Component implements KeyListener, ActionList
 				else if (code == settings[2])
 				{
 					game.rotate();
-					
 				}
 				else if (code == settings[3])
 				{
 					game.rotateCounter();
-					
 				}
 				else if (code == settings[4])
 				{
@@ -738,19 +375,16 @@ public class TetrisRenderer extends Component implements KeyListener, ActionList
 				}
 				else if (code == settings[5])
 				{
-					game.drop();
-					
+					game.drop();			
 				}
 				else if (code == settings[6])
 				{
-					game.store();
-					
+					game.store();		
 				}
 				else if (code == settings[8])
 				{
 					game.firmDrop();
 					easySpin();
-					
 				}
 			}
 			if (code == settings[7])
@@ -768,8 +402,5 @@ public class TetrisRenderer extends Component implements KeyListener, ActionList
 		else if (code == settings[4])
 			down = false;
 	}
-	public void keyTyped(KeyEvent e)
-	{
-
-	}
+	public void keyTyped(KeyEvent e) { }
 }

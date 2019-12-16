@@ -13,7 +13,7 @@ public class BGM {
         AudioFormat format;
         DataLine.Info info;
 
-        bgm = new File("../Sound/bgm_TheFatRat.wav");
+        bgm = new File("Sound/bgm_TheFatRat.wav");
 
         Clip clip;
 

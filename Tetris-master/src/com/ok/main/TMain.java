@@ -20,14 +20,14 @@ import javax.swing.JLabel;
 import com.ok.ai.ScoreFrame;
 import com.ok.ai.SettingsDialog;
 import com.ok.ai.TetrisRenderer;
-import com.ok.window.Tetris;
+//import com.ok.window.Tetris;
 
 public class TMain extends JFrame {
 	
 	public static int SCREEN_WIDTH = 0;
 	public static int SCREEN_HEIGHT = 0;
 
-	private Tetris uc;
+	//private Tetris uc;
 	private TSetting setkey;
 	private TetrisRenderer ai;
 
@@ -213,7 +213,9 @@ public class TMain extends JFrame {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				// �̱� ��� ���� �̺�Ʈó�� �κ�
-				new ScoreFrame();
+				String str="";
+				int score=0;
+				ScoreFrame sf = new ScoreFrame(str,score);
 			}
 		});
 		add(rankBtn);

@@ -4,10 +4,10 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.io.Serializable;
 
-import com.ok.window.TetrisBoard;
-
 public class Block implements Serializable{
-	private int size = TetrisBoard.BLOCK_SIZE;
+	private int size = 20;
+	private int BOARD_X=120;
+	private int BOARD_Y=150;
 	private int width = size, height = size;
 	private int gap = 3;
 	private int fixGridX, fixGridY;
@@ -19,9 +19,9 @@ public class Block implements Serializable{
 	
 	/**
 	 * 
-	 * @param fixGridX : »ç°¢Çü °íÁ¤ X ±×¸®µåÁÂÇ¥
-	 * @param fixGridY : »ç°¢Çü °íÁ¤ Y ±×¸®µåÁÂÇ¥
-	 * @param color : »ç°¢Çü »ö»ó
+	 * @param fixGridX : ï¿½ç°¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ X ï¿½×¸ï¿½ï¿½ï¿½ï¿½ï¿½Ç¥
+	 * @param fixGridY : ï¿½ç°¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Y ï¿½×¸ï¿½ï¿½ï¿½ï¿½ï¿½Ç¥
+	 * @param color : ï¿½ç°¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	 */
 	public Block(int fixGridX, int fixGridY, Color color, Color ghostColor) {
 		this.fixGridX = fixGridX;
@@ -32,22 +32,22 @@ public class Block implements Serializable{
 	
 
 	/**
-	 * »ç°¢ÇüÀ» ±×·ÁÁØ´Ù.
+	 * ï¿½ç°¢ï¿½ï¿½ï¿½ï¿½ ï¿½×·ï¿½ï¿½Ø´ï¿½.
 	 * @param g
 	 */
 	public void drawColorBlock(Graphics g){
 		if(ghost)g.setColor(ghostColor);
 		else g.setColor(color);
-		g.fillRect((fixGridX+posGridX)*size + TetrisBoard.BOARD_X, (fixGridY+posGridY)*size + TetrisBoard.BOARD_Y, width, height);
+		g.fillRect((fixGridX+posGridX)*size + BOARD_X, (fixGridY+posGridY)*size + BOARD_Y, width, height);
 		g.setColor(Color.WHITE);
-		g.drawRect((fixGridX+posGridX)*size + TetrisBoard.BOARD_X, (fixGridY+posGridY)*size + TetrisBoard.BOARD_Y, width, height);
-		g.drawLine((fixGridX+posGridX)*size + TetrisBoard.BOARD_X, (fixGridY+posGridY)*size + TetrisBoard.BOARD_Y, (fixGridX+posGridX)*size+width + TetrisBoard.BOARD_X, (fixGridY+posGridY)*size+height + TetrisBoard.BOARD_Y);
-		g.drawLine((fixGridX+posGridX)*size + TetrisBoard.BOARD_X, (fixGridY+posGridY)*size+height + TetrisBoard.BOARD_Y, (fixGridX+posGridX)*size+width + TetrisBoard.BOARD_X, (fixGridY+posGridY)*size + TetrisBoard.BOARD_Y);
+		g.drawRect((fixGridX+posGridX)*size + BOARD_X, (fixGridY+posGridY)*size + BOARD_Y, width, height);
+		g.drawLine((fixGridX+posGridX)*size + BOARD_X, (fixGridY+posGridY)*size + BOARD_Y, (fixGridX+posGridX)*size+width + BOARD_X, (fixGridY+posGridY)*size+height + BOARD_Y);
+		g.drawLine((fixGridX+posGridX)*size +BOARD_X, (fixGridY+posGridY)*size+height + BOARD_Y, (fixGridX+posGridX)*size+width + BOARD_X, (fixGridY+posGridY)*size + BOARD_Y);
 		if(ghost)g.setColor(ghostColor);
 		else g.setColor(color);
-		g.fillRect((fixGridX+posGridX)*size+gap + TetrisBoard.BOARD_X, (fixGridY+posGridY)*size+gap + TetrisBoard.BOARD_Y, width-gap*2, height-gap*2);
+		g.fillRect((fixGridX+posGridX)*size+gap + BOARD_X, (fixGridY+posGridY)*size+gap + BOARD_Y, width-gap*2, height-gap*2);
 		g.setColor(Color.WHITE);
-		g.drawRect((fixGridX+posGridX)*size+gap + TetrisBoard.BOARD_X, (fixGridY+posGridY)*size+gap + TetrisBoard.BOARD_Y, width-gap*2, height-gap*2);
+		g.drawRect((fixGridX+posGridX)*size+gap + BOARD_X, (fixGridY+posGridY)*size+gap + BOARD_Y, width-gap*2, height-gap*2);
 	}
 	
 	public void drawEnemyBlock(Graphics g, int x, int y){
@@ -64,15 +64,15 @@ public class Block implements Serializable{
 	}
 	
 	/**
-	 * ÇöÀç ºí·°ÀÇ Àý´ëÁÂÇ¥¸¦ º¸¿©ÁØ´Ù.
-	 * @return ÇöÀçºí·°ÀÇ XÀý´ëÁÂÇ¥
+	 * ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø´ï¿½.
+	 * @return ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Xï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¥
 	 */
 	public int getX(){return posGridX + fixGridX;}	
 	
 	
 	/**
-	 * ÇöÀç ºí·°ÀÇ Àý´ëÁÂÇ¥¸¦ º¸¿©ÁØ´Ù.
-	 * @return ÇöÀçºí·°ÀÇ YÀý´ëÁÂÇ¥
+	 * ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¥ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ø´ï¿½.
+	 * @return ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Yï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¥
 	 */
 	public int getY(){return posGridY + fixGridY;}
 

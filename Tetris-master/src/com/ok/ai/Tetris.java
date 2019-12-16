@@ -29,12 +29,37 @@ public class Tetris
 	public static final int W = 10;
 	public static final int H = 20;
 
-	protected static final int SQR_W = 20;
-	public static final int DSP_W = 70;
-	public static final int FIELD_W = W * SQR_W;
-	public static final int FIELD_H = H * SQR_W;
-	public static final int PIXEL_W = FIELD_W + DSP_W * 2;
-	public static final int PIXEL_H = FIELD_H + 60;
+	protected static int SQR_W = 20;
+	public static int DSP_W = 70;
+	public static int FIELD_W = W * SQR_W;
+	public static int FIELD_H = H * SQR_W;
+	protected static Font F_LINES = new Font("digital-7", Font.BOLD, (int)(SQR_W*1.2));
+	protected static Font F_TIME = new Font(Font.SANS_SERIF, Font.BOLD, (int)(SQR_W*0.7));
+	protected static Font F_UI = new Font("digital-7", Font.BOLD, (int)(SQR_W*0.7));
+	protected static Font F_PAUSE = new Font("digital-7", Font.BOLD, (int)(SQR_W*1.8));
+	protected static Font F_GAMEOVER = new Font("digital-7", Font.BOLD, (int)(SQR_W*2.4));
+	public void setSQR_W(int sqr_W) {
+		this.SQR_W=sqr_W;
+		this.FIELD_W=W*sqr_W;
+		this.FIELD_H=H*sqr_W;
+		this.F_LINES = new Font("digital-7", Font.BOLD, (int)(sqr_W*1.2));
+		this.F_TIME = new Font(Font.SANS_SERIF, Font.BOLD, (int)(sqr_W*0.7));
+		this.F_UI = new Font("digital-7", Font.BOLD, (int)(SQR_W*0.7));
+		this.F_PAUSE = new Font("digital-7", Font.BOLD, (int)(SQR_W*1.8));
+		this.F_GAMEOVER = new Font("digital-7", Font.BOLD, (int)(SQR_W*2.4));
+		
+	}
+	public int getSQR_W() {
+		return SQR_W;
+	}
+	public void setDSP_W(int dsp_w) {
+		this.DSP_W=dsp_w;
+	}
+	public int getDSP_W() {
+		return DSP_W;
+	}
+	public static int PIXEL_W = FIELD_W + DSP_W * 2;
+	public static int PIXEL_H = FIELD_H + 60;
 	public static boolean isIDFrame = false;
 	
 	protected static final int TSPIN_ANIMATION_TICKS = 3;
@@ -848,11 +873,6 @@ public int level=1;
 	protected static final Color C_NOTICE = new Color(255, 255, 255, 225);
 												// I, S, T, O, Z, L, J
 	protected static final Color[] COLORS = {null, Color.CYAN, Color.RED, Color.MAGENTA, Color.YELLOW, Color.GREEN, Color.ORANGE, new Color(100, 150, 255), new Color(190, 190, 190)};
-	protected static final Font F_LINES = new Font("digital-7", Font.BOLD, 24);
-	protected static final Font F_TIME = new Font(Font.SANS_SERIF, Font.BOLD, 14);
-	protected static final Font F_UI = new Font("digital-7", Font.BOLD, 14);
-	protected static final Font F_PAUSE = new Font("digital-7", Font.BOLD, 36);
-	protected static final Font F_GAMEOVER = new Font("digital-7", Font.BOLD, 48);
 	
 	public void drawTo(Graphics2D g, int x, int y)
 	{
@@ -861,7 +881,6 @@ public int level=1;
 		y += 60;
 
 		g.setColor(C_BACKGROUND); //배경색 대입
-		//g.fillRoundRect(x, y, FIELD_W, FIELD_H, 20, 20);
 		g.fillRect(x, y, FIELD_W, FIELD_H); //게임 창 구성
 
 		if (!dead)
@@ -1005,10 +1024,10 @@ public int level=1;
 			}
 		}
 
-		g.setColor(Color.WHITE);
+		g.setColor(Color.WHITE);//hold글씨, 박스 색상
 		g.setFont(F_UI);
 		drawCentered(g, "Hold", x - DSP_W / 2, y + 10);
-		g.drawRect(x - DSP_W + 10, y + 20, 50, 50);
+		g.drawRect(x - DSP_W + DSP_W/7, y + 20, (int)(SQR_W*2.5), (int)(SQR_W*2.5));
 
 		if (stored != -1)
 			drawTetrimino(g, stored, x - DSP_W / 2, y + 45, 10);
@@ -1021,18 +1040,16 @@ public int level=1;
 			g.setColor(Color.WHITE);
 			int yoffset = i * 50 + (i > 0 ? 8 : 0);
 			
-			g.drawRect(x + FIELD_W + 10, y + 20 + yoffset, 50, 50);
-			drawTetrimino(g, fMoves[i], x + FIELD_W + DSP_W / 2, y + 45 + yoffset, 10);
+			g.drawRect(x + FIELD_W + 10, y + 20 + yoffset, (int)(SQR_W*2.5), (int)(SQR_W*2.5)); //Next의 네모칸들
+			drawTetrimino(g, fMoves[i], x + FIELD_W + DSP_W / 2, y + (int)(SQR_W*2.5) + yoffset, (int)(SQR_W/2));
 		}
 		g.setColor(Color.WHITE);
-		g.drawRect(x + FIELD_W + 10 + 1, y + 20 + 1, 50 - 2, 50 - 2);
 
 
 		g.setColor(Color.WHITE);
-		g.drawRect(x, y-84, 200, 70);
 
 		g.setColor (Color.WHITE);
-		g.drawRoundRect(x, y-84, 200, 70, 20, 20);
+		g.drawRoundRect(x, y-84, SQR_W*10, DSP_W, 20, 20); //보드판 크기 리사이징
 		
 		if (dead)
 		{ 
@@ -1040,7 +1057,7 @@ public int level=1;
 			g.fillRect(x, y, FIELD_W, FIELD_H);
 			
 			g.setColor(new Color(0, 0, 0, 150));
-			RoundRectangle2D rect = new RoundRectangle2D.Float(x + 15, y - 80 + FIELD_H / 2, FIELD_W - 30, 130, 15, 15);
+			RoundRectangle2D rect = new RoundRectangle2D.Float(x + 15, y - 80 + FIELD_H / 2, FIELD_W - (int)(SQR_W*1.5), (int)(SQR_W*6.5), 15, 15);
 			g.fill(rect);
 			g.setColor(Color.WHITE);
 			g.draw(rect);
@@ -1067,7 +1084,7 @@ public int level=1;
 			int wid = m.stringWidth("PAUSED");
 			
 			g.setColor(new Color(0, 0, 0, 120));
-			RoundRectangle2D rect = new RoundRectangle2D.Float(x + FIELD_W / 2 - wid / 2 - 15, y - 5 - 28 + FIELD_H / 2, wid + 30, 50, 10, 5);
+			RoundRectangle2D rect = new RoundRectangle2D.Float(x + FIELD_W / 2 - wid / 2 - 15, y - 5 - 28 + FIELD_H / 2, wid + (int)(SQR_W*1.5), (int)(SQR_W*2.5), 10, 5);
 			g.fill(rect);
 			g.setColor(Color.WHITE);
 			g.draw(rect);

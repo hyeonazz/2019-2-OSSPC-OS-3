@@ -55,14 +55,15 @@ public class TetrisMarathon extends Tetris
 		g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
 		g.setColor(Color.WHITE);
 		g.setFont(F_LINES);
-		g.drawString("" + score, x + 30, y + 10);
+		g.drawString("" + score, x + (int)(SQR_W*1.5), y + (int)(SQR_W/2));
 		
 		g.setFont(F_TIME);
-		g.drawString("Level: "+getLevel(), x+140, y+20);
-		g.drawString("" + linesCleared + " lines", x + 140, y + 32);
-		g.drawString(getTimeString(), x + 30, y + 32);
+		g.drawString("Level: "+getLevel(), x+DSP_W*2, y+SQR_W);
+		g.drawString("" + linesCleared + " lines", x+DSP_W*2, y+ DSP_W/2);
+		g.drawString(getTimeString(), x + (int)(SQR_W*1.5), y + DSP_W/2);
 		if (combo > 0)
-			g.drawString("x " + (combo + 1), x + 140, y + 7);
+			g.drawString("combo x" + (combo + 1), x+(int)(DSP_W*1.8), y + DSP_W/10);
+
 		
 		super.drawTo(g, x, y);
 		
